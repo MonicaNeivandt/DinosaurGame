@@ -11,6 +11,9 @@ public class Board : MonoBehaviour
     int rowIdx = 0;
     int colIdx = 0;
 
+    // 10 second counter
+    float gameOverTimer = 10.0f;
+
     // Start is called before the first frame update
     void Start() {
         types[0] = GameObject.Find("purple_dinosaur");
@@ -24,6 +27,13 @@ public class Board : MonoBehaviour
 
     // Update is called once per frame
     void Update() {
+        // deltaTime returns a float
+        gameOverTimer -= Time.deltaTime;
+        if ( gameOverTimer < 0 )
+        {
+            Debug.Log("Game over!");
+        }
+
         if ( Input.GetKeyDown(KeyCode.W) ) {
             highlightSquare(rowIdx+1, colIdx);
         } else if ( Input.GetKeyDown(KeyCode.S) ) {

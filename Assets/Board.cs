@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Board : MonoBehaviour
 {
@@ -14,8 +15,12 @@ public class Board : MonoBehaviour
     // 10 second counter
     float gameOverTimer = 10.0f;
 
+    GameObject gameOverPanel;
+
     // Start is called before the first frame update
     void Start() {
+        gameOverPanel = GameObject.Find("game_over_panel");
+
         types[0] = GameObject.Find("purple_dinosaur");
         types[1] = GameObject.Find("green_dinosaur");
         types[2] = GameObject.Find("red_dinosaur");
@@ -31,7 +36,7 @@ public class Board : MonoBehaviour
         gameOverTimer -= Time.deltaTime;
         if ( gameOverTimer < 0 )
         {
-            Debug.Log("Game over!");
+            gameOver();
         }
 
         if ( Input.GetKeyDown(KeyCode.W) ) {
@@ -52,7 +57,10 @@ public class Board : MonoBehaviour
         }
     }
     
-    void resetBoard() {        
+    void resetBoard() {
+        // Set the game over overlay off
+        gameOverPanel.SetActive(false);
+
         GameObject mainSquare = GameObject.Find("AbstractSquare");
         GameObject mainPurpleDinosaur = GameObject.Find("purple_dinosaur");
         
@@ -65,7 +73,12 @@ public class Board : MonoBehaviour
                 dinosaurs[r,c].transform.position = new Vector3((float) (c-4.5), (float) (r-4.5), -2f);
             }
         }
+    }
 
+    void gameOver()
+    {
+        // Set the panel to true
+        gameOverPanel.SetActive(true);
     }
 
     void setClicked(int row, int col)

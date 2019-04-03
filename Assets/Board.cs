@@ -37,6 +37,7 @@ public class Board : MonoBehaviour
         if ( gameOverTimer < 0 )
         {
             gameOver();
+            return;
         }
 
         if ( Input.GetKeyDown(KeyCode.W) ) {

@@ -8,4 +8,10 @@ EditorBuildSettings:
   - enabled: 0
     path: 
     guid: 00000000000000000000000000000000
+  - enabled: 1
+    path: Assets/Scenes/start.unity
+    guid: 53f0b0445a133834cb99f11d484f7bf8
+  - enabled: 1
+    path: Assets/Scenes/dinosaurs.unity
+    guid: dc808ad515db22a4d8696f1dd2e6b85a
   m_configObjects: {}

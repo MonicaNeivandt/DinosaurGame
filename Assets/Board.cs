@@ -16,10 +16,12 @@ public class Board : MonoBehaviour
     float gameOverTimer;
 
     GameObject gameOverPanel;
+    Text timerText;
 
     // Start is called before the first frame update
     void Start() {
         gameOverPanel = GameObject.Find("game_over_panel");
+        timerText = GameObject.Find("timer_text").GetComponent<Text>();
 
         types[0] = GameObject.Find("purple_dinosaur");
         types[1] = GameObject.Find("green_dinosaur");
@@ -34,12 +36,14 @@ public class Board : MonoBehaviour
     // Update is called once per frame
     void Update() {
         // deltaTime returns a float
-        gameOverTimer -= Time.deltaTime;
         if ( gameOverTimer < 0 )
         {
             gameOver();
             return;
         }
+
+        gameOverTimer -= Time.deltaTime;
+        timerText.text = string.Format("{0:N2}", gameOverTimer);
 
         if ( Input.GetKeyDown(KeyCode.W) ) {
             highlightSquare(rowIdx+1, colIdx);
@@ -63,7 +67,7 @@ public class Board : MonoBehaviour
     {
         // Set the game over overlay off
         gameOverPanel.SetActive(false);
-        gameOverTimer = 10.0f;
+        gameOverTimer = 5.0f;
     }
     
     void resetBoard() {
@@ -85,6 +89,8 @@ public class Board : MonoBehaviour
     {
         // Set the game over overlay active
         gameOverPanel.SetActive(true);
+
+        timerText.text = "0";
 
         if (Input.GetKeyDown(KeyCode.X))
         {

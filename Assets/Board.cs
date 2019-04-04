@@ -13,7 +13,7 @@ public class Board : MonoBehaviour
     int colIdx = 0;
 
     // 10 second counter
-    float gameOverTimer = 10.0f;
+    float gameOverTimer;
 
     GameObject gameOverPanel;
 
@@ -28,6 +28,7 @@ public class Board : MonoBehaviour
 
         resetBoard();
         highlightSquare(0, 0);
+        initGameTimer();
     }
 
     // Update is called once per frame
@@ -57,11 +58,15 @@ public class Board : MonoBehaviour
             setClicked((int) (mousePos2D.y+5), (int) (mousePos2D.x+5));
         }
     }
-    
-    void resetBoard() {
+
+    void initGameTimer()
+    {
         // Set the game over overlay off
         gameOverPanel.SetActive(false);
-
+        gameOverTimer = 10.0f;
+    }
+    
+    void resetBoard() {
         GameObject mainSquare = GameObject.Find("AbstractSquare");
         GameObject mainPurpleDinosaur = GameObject.Find("purple_dinosaur");
         
@@ -78,8 +83,14 @@ public class Board : MonoBehaviour
 
     void gameOver()
     {
-        // Set the panel to true
+        // Set the game over overlay active
         gameOverPanel.SetActive(true);
+
+        if (Input.GetKeyDown(KeyCode.X))
+        {
+            // Restart board
+            initGameTimer();
+        }
     }
 
     void setClicked(int row, int col)

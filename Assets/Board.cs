@@ -7,7 +7,7 @@ public class Board : MonoBehaviour
 {
     GameObject[,] squares = new GameObject[10,10];
     GameObject[,] dinosaurs = new GameObject[10,10];
-    GameObject[] types = new GameObject[4];
+    GameObject[] types = new GameObject[8];
     
     int rowIdx = 0;
     int colIdx = 0;
@@ -27,8 +27,12 @@ public class Board : MonoBehaviour
         types[1] = GameObject.Find("green_dinosaur");
         types[2] = GameObject.Find("red_dinosaur");
         types[3] = GameObject.Find("orange_dinosaur");
+		types[4] = GameObject.Find("teal_dinosaur");
+		types[5] = GameObject.Find("blue_dinosaur");
+		types[6] = GameObject.Find("pink_dinosaur");
+		types[7] = GameObject.Find("egg_dinosaur");
 
-        resetBoard();
+		resetBoard();
         highlightSquare(0, 0);
         initGameTimer();
     }
@@ -79,7 +83,7 @@ public class Board : MonoBehaviour
                 squares[r,c] = Instantiate(mainSquare) as GameObject;
                 squares[r,c].transform.position = new Vector3((float) (c-4.5), (float) (r-4.5), 1f);
 
-                dinosaurs[r,c] = Instantiate(types[(int)Random.Range(0f, 4f)]) as GameObject;
+                dinosaurs[r,c] = Instantiate(types[(int)Random.Range(0f, 8f)]) as GameObject;
                 dinosaurs[r,c].transform.position = new Vector3((float) (c-4.5), (float) (r-4.5), -2f);
             }
         }

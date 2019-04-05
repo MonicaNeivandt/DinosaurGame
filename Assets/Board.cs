@@ -63,7 +63,7 @@ public class Board : MonoBehaviour
             Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             Vector2 mousePos2D = new Vector2(mousePos.x, mousePos.y);
 
-            setClicked((int) (mousePos2D.y+5), (int) (mousePos2D.x+5));
+            setClicked((int) (mousePos2D.y+5), (int) (mousePos2D.x+6));
         }
     }
 
@@ -71,7 +71,7 @@ public class Board : MonoBehaviour
     {
         // Set the game over overlay off
         gameOverPanel.SetActive(false);
-        gameOverTimer = 5.0f;
+        gameOverTimer = 10.0f;
     }
     
     void resetBoard() {
@@ -81,10 +81,10 @@ public class Board : MonoBehaviour
         for (int r = 0; r < 10; r++) {
             for (int c = 0; c < 10; c++) {
                 squares[r,c] = Instantiate(mainSquare) as GameObject;
-                squares[r,c].transform.position = new Vector3((float) (c-4.5), (float) (r-4.5), 1f);
+                squares[r,c].transform.position = new Vector3((float) (c-5.5), (float) (r-4.5), 1f);
 
                 dinosaurs[r,c] = Instantiate(types[(int)Random.Range(0f, 8f)]) as GameObject;
-                dinosaurs[r,c].transform.position = new Vector3((float) (c-4.5), (float) (r-4.5), -2f);
+                dinosaurs[r,c].transform.position = new Vector3((float) (c-5.5), (float) (r-4.5), -2f);
             }
         }
     }
@@ -94,7 +94,7 @@ public class Board : MonoBehaviour
         // Set the game over overlay active
         gameOverPanel.SetActive(true);
 
-        timerText.text = "0";
+        timerText.text = "0.00";
 
         if (Input.GetKeyDown(KeyCode.X))
         {

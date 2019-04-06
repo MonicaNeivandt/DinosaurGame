@@ -12,7 +12,6 @@ public class Board : MonoBehaviour
     int rowIdx = 0;
     int colIdx = 0;
 
-    // 10 second counter
     float gameOverTimer;
 
     GameObject gameOverPanel;
@@ -71,7 +70,7 @@ public class Board : MonoBehaviour
     {
         // Set the game over overlay off
         gameOverPanel.SetActive(false);
-        gameOverTimer = 10.0f;
+        gameOverTimer = 60.0f;
     }
     
     void resetBoard() {
@@ -86,6 +85,143 @@ public class Board : MonoBehaviour
                 dinosaurs[r,c] = Instantiate(types[(int)Random.Range(0f, 8f)]) as GameObject;
                 dinosaurs[r,c].transform.position = new Vector3((float) (c-5.5), (float) (r-4.5), -2f);
             }
+        }
+        //checkAllMatches();
+    }
+
+    void explode(List<GameObject> dinos, List<int> xs, List<int> ys)
+    {
+        int len = dinos.Count;
+        for(int i = 0; i< len; i++)
+        {
+            dinos[i].GetComponent<SpriteRenderer>().sprite = null;
+            dinosaurs[xs[i], ys[i]] = null;
+        }
+        if (len==3)
+        {
+            // trigger sound effect and points
+        } else if (len == 4)
+        {
+            // trigger better sound effect and points
+        } else
+        {
+            // trigger even better sound effect and points
+        }
+        Debug.Log("size: " + len);
+    }
+
+    bool checkMatch(GameObject d, int r, int c)
+    {
+        GameObject type = d;
+        List<GameObject> matchingTiles = new List<GameObject>();
+        List<int> xVals = new List<int>();
+        List<int> yVals = new List<int>();
+
+        // check horizontal
+        for(int i = c; i>=0; i--)
+        {
+            if(dinosaurs[r,i]!=null && type!=null)
+            {
+                if (dinosaurs[r, i].name == type.name && !matchingTiles.Contains(dinosaurs[r,i]))
+                {
+                    matchingTiles.Add(dinosaurs[r, i]);
+                    xVals.Add(r);
+                    yVals.Add(i);
+                } else
+                {
+                    break;
+                }
+            }
+        }
+        for(int i = c+1; i<10; i++)
+        {
+            if (dinosaurs[r, i]!=null && type != null && !matchingTiles.Contains(dinosaurs[r, i]))
+            {
+                if (dinosaurs[r, i].name == type.name)
+                {
+                    matchingTiles.Add(dinosaurs[r, i]);
+                    xVals.Add(r);
+                    yVals.Add(i);
+                } else
+                {
+                    break;
+                }
+            }
+        }
+        if (matchingTiles.Count > 2)
+        {
+            explode(matchingTiles, xVals, yVals);
+            return true;
+        } else
+        {
+            matchingTiles.Clear();
+            xVals.Clear();
+            yVals.Clear();
+        }
+
+        //check vertical
+        for (int i = r; i >= 0; i--)
+        {
+            if (dinosaurs[i, c] != null && type != null)
+            {
+                if (dinosaurs[i, c].name == type.name && !matchingTiles.Contains(dinosaurs[i, c]))
+                {
+                    matchingTiles.Add(dinosaurs[i, c]);
+                    xVals.Add(i);
+                    yVals.Add(c);
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+        for (int i = r; i < 10; i++)
+        {
+            if (dinosaurs[i, c] != null && type != null)
+            {
+                if (dinosaurs[i, c].name == type.name && !matchingTiles.Contains(dinosaurs[i, c]))
+                {
+                    matchingTiles.Add(dinosaurs[i, c]);
+                    xVals.Add(i);
+                    yVals.Add(c);
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+        if (matchingTiles.Count > 2)
+        {
+            explode(matchingTiles, xVals, yVals);
+            return true;
+        }
+        return false;
+    }
+
+    bool checkAllMatches()
+    {
+        bool ret = false;
+        for(int i = 0; i<10; i++)
+        {
+            for(int j = 0; j<10; j++)
+            {
+                if(checkMatch(dinosaurs[i,j], i, j))
+                {
+                    ret = true;
+                }
+            }
+        }
+        return ret;
+    }
+
+    void swapDinosaurs(GameObject first, GameObject second)
+    {
+        Debug.Log("swap the two dinosaurs");
+        if (!checkAllMatches())
+        {
+            // swap back
         }
     }
 
@@ -105,6 +241,8 @@ public class Board : MonoBehaviour
 
     void setClicked(int row, int col)
     {
+        checkAllMatches();
+
         // unselect anything already selected
         for (int x = 0; x < 10; x++)
         {
@@ -142,7 +280,7 @@ public class Board : MonoBehaviour
         }
 
         setColor(squares[rowIdx, colIdx], Color.white);
-        setColor(squares[row, col], Color.red);
+        //setColor(squares[row, col], Color.red);
         rowIdx = row;
         colIdx = col;
     }

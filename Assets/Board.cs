@@ -21,10 +21,17 @@ public class Board : MonoBehaviour
     GameObject gameOverPanel;
     Text timerText;
 
+    int score;
+    GameObject scoreBoard;
+    Text scoreText;
+
     // Start is called before the first frame update
     void Start() {
         gameOverPanel = GameObject.Find("game_over_panel");
         timerText = GameObject.Find("timer_text").GetComponent<Text>();
+
+        scoreBoard = GameObject.Find("score_panel");
+        scoreText = GameObject.Find("score_text").GetComponent<Text>();
 
         types[0] = GameObject.Find("purple_dinosaur");
         types[1] = GameObject.Find("green_dinosaur");
@@ -38,6 +45,8 @@ public class Board : MonoBehaviour
 		resetBoard();
         highlightSquare(0, 0);
         initGameTimer();
+        initScoreBoard();
+        updateScore();
     }
 
     // Update is called once per frame
@@ -76,7 +85,13 @@ public class Board : MonoBehaviour
         gameOverPanel.SetActive(false);
         gameOverTimer = 60.0f;
     }
-    
+
+    void initScoreBoard()
+    {
+        //set score to 0 to start
+        score = 0;
+    }
+
     void resetBoard() {
         GameObject mainSquare = GameObject.Find("AbstractSquare");
         GameObject mainPurpleDinosaur = GameObject.Find("purple_dinosaur");
@@ -150,10 +165,23 @@ public class Board : MonoBehaviour
                 }
             }
         }
-        if (matchingTiles.Count > 2)
+        if (matchingTiles.Count == 3)
         {
             explode(matchingTiles, xVals, yVals);
+            score += 100; //player has matched three dinosaurs, gets 100 points
             return true;
+        }
+        if (matchingTiles.Count == 4)
+        {
+            explode(matchingTiles, xVals, yVals);
+            score += 200; //player has matched four dinosaurs, gets 200 points
+            return true;
+        }
+        if (matchingTiles.Count >= 5)
+        {
+            explode(matchingTiles, xVals, yVals);
+            score += 400; //player has matched five or more dinosaurs, gets 400 points
+            return true;        
         } else
         {
             matchingTiles.Clear();
@@ -251,6 +279,11 @@ public class Board : MonoBehaviour
             // Restart board
             initGameTimer();
         }
+    }
+
+    void updateScore()
+    {
+        scoreText.text = score.ToString();
     }
 
     void setClicked(int row, int col)

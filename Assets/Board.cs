@@ -8,6 +8,10 @@ public class Board : MonoBehaviour
     GameObject[,] squares = new GameObject[10,10];
     GameObject[,] dinosaurs = new GameObject[10,10];
     GameObject[] types = new GameObject[8];
+
+    GameObject currentDino = new GameObject();
+
+    bool attemptSwap = false;
     
     int rowIdx = 0;
     int colIdx = 0;
@@ -86,7 +90,6 @@ public class Board : MonoBehaviour
                 dinosaurs[r,c].transform.position = new Vector3((float) (c-5.5), (float) (r-4.5), -2f);
             }
         }
-        //checkAllMatches();
     }
 
     void explode(List<GameObject> dinos, List<int> xs, List<int> ys)
@@ -107,7 +110,6 @@ public class Board : MonoBehaviour
         {
             // trigger even better sound effect and points
         }
-        Debug.Log("size: " + len);
     }
 
     bool checkMatch(GameObject d, int r, int c)
@@ -218,10 +220,22 @@ public class Board : MonoBehaviour
 
     void swapDinosaurs(GameObject first, GameObject second)
     {
-        Debug.Log("swap the two dinosaurs");
+        Sprite temp = first.GetComponent<SpriteRenderer>().sprite;
+        string name = first.GetComponent<SpriteRenderer>().name;
+        first.GetComponent<SpriteRenderer>().sprite = second.GetComponent<SpriteRenderer>().sprite;
+        first.GetComponent<SpriteRenderer>().name = second.GetComponent<SpriteRenderer>().name;
+        second.GetComponent<SpriteRenderer>().sprite = temp;
+        second.GetComponent<SpriteRenderer>().name = name;
+
         if (!checkAllMatches())
         {
             // swap back
+            temp = first.GetComponent<SpriteRenderer>().sprite;
+            name = first.GetComponent<SpriteRenderer>().name;
+            first.GetComponent<SpriteRenderer>().sprite = second.GetComponent<SpriteRenderer>().sprite;
+            first.GetComponent<SpriteRenderer>().name = second.GetComponent<SpriteRenderer>().name;
+            second.GetComponent<SpriteRenderer>().sprite = temp;
+            second.GetComponent<SpriteRenderer>().name = name;
         }
     }
 
@@ -241,8 +255,6 @@ public class Board : MonoBehaviour
 
     void setClicked(int row, int col)
     {
-        checkAllMatches();
-
         // unselect anything already selected
         for (int x = 0; x < 10; x++)
         {
@@ -252,24 +264,35 @@ public class Board : MonoBehaviour
             }
         }
 
-        // select new square
-        setColor(squares[row, col], Color.black);
+        if (!attemptSwap)
+        {
+            // select new square
+            setColor(squares[row, col], Color.black);
+            currentDino = dinosaurs[row, col];
 
-        if (row > 0)
-        {
-            setColor(squares[row - 1, col], Color.yellow);
+            if (row > 0)
+            {
+                setColor(squares[row - 1, col], Color.yellow);
+            }
+            if (row < 9)
+            {
+                setColor(squares[row + 1, col], Color.yellow);
+            }
+            if (col > 0)
+            {
+                setColor(squares[row, col - 1], Color.yellow);
+            }
+            if (col < 9)
+            {
+                setColor(squares[row, col + 1], Color.yellow);
+            }
+            attemptSwap = true;
         }
-        if (row < 9)
+        else
         {
-            setColor(squares[row + 1, col], Color.yellow);
-        }
-        if (col > 0)
-        {
-            setColor(squares[row, col - 1], Color.yellow);
-        }
-        if (col < 9)
-        {
-            setColor(squares[row, col + 1], Color.yellow);
+            swapDinosaurs(currentDino, dinosaurs[row, col]);
+
+            attemptSwap = false;
         }
 
     }
@@ -280,7 +303,6 @@ public class Board : MonoBehaviour
         }
 
         setColor(squares[rowIdx, colIdx], Color.white);
-        //setColor(squares[row, col], Color.red);
         rowIdx = row;
         colIdx = col;
     }

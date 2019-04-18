@@ -83,7 +83,7 @@ public class Board : MonoBehaviour
     {
         // Set the game over overlay off
         gameOverPanel.SetActive(false);
-        gameOverTimer = 60.0f;
+        gameOverTimer = 120.0f;
     }
 
     void initScoreBoard()
@@ -118,12 +118,19 @@ public class Board : MonoBehaviour
         if (len==3)
         {
             // trigger sound effect and points
+            score += 100; //player has matched three dinosaurs, gets 100 points
+            updateScore();
         } else if (len == 4)
         {
             // trigger better sound effect and points
+            score += 200; //player has matched four dinosaurs, gets 200 points
+            updateScore();
+
         } else
         {
             // trigger even better sound effect and points
+            score += 400; //player has matched five or more dinosaurs, gets 400 points
+            updateScore();
         }
     }
 
@@ -165,23 +172,10 @@ public class Board : MonoBehaviour
                 }
             }
         }
-        if (matchingTiles.Count == 3)
+        if (matchingTiles.Count > 2)
         {
-            explode(matchingTiles, xVals, yVals);
-            score += 100; //player has matched three dinosaurs, gets 100 points
-            return true;
-        }
-        if (matchingTiles.Count == 4)
-        {
-            explode(matchingTiles, xVals, yVals);
-            score += 200; //player has matched four dinosaurs, gets 200 points
-            return true;
-        }
-        if (matchingTiles.Count >= 5)
-        {
-            explode(matchingTiles, xVals, yVals);
-            score += 400; //player has matched five or more dinosaurs, gets 400 points
-            return true;        
+            explode(matchingTiles, xVals, yVals);            
+            return true;           
         } else
         {
             matchingTiles.Clear();

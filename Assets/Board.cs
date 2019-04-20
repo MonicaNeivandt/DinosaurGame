@@ -1,7 +1,16 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
+
+public class Tile
+{
+	public int x { get; set; }
+	public int y { get; set; }
+	public GameObject go { get; set; }
+	public Sprite sprite { get; set; }
+}
 
 public class Board : MonoBehaviour
 {
@@ -25,8 +34,10 @@ public class Board : MonoBehaviour
     GameObject scoreBoard;
     Text scoreText;
 
-    // Start is called before the first frame update
-    void Start() {
+	public GameObject CurrentDino { get => currentDino; set => currentDino = value; }
+
+	// Start is called before the first frame update
+	void Start() {
         gameOverPanel = GameObject.Find("game_over_panel");
         timerText = GameObject.Find("timer_text").GetComponent<Text>();
 
@@ -47,6 +58,7 @@ public class Board : MonoBehaviour
         initGameTimer();
         initScoreBoard();
         updateScore();
+		checkAllMatches();
     }
 
     // Update is called once per frame
@@ -83,7 +95,7 @@ public class Board : MonoBehaviour
     {
         // Set the game over overlay off
         gameOverPanel.SetActive(false);
-        gameOverTimer = 120.0f;
+        gameOverTimer = 60.0f;
     }
 
     void initScoreBoard()
@@ -107,14 +119,14 @@ public class Board : MonoBehaviour
         }
     }
 
-    void explode(List<GameObject> dinos, List<int> xs, List<int> ys)
+    void explode(List<Tile> dinos)
     {
-        int len = dinos.Count;
-        for(int i = 0; i< len; i++)
+		int len = dinos.Count;
+        for(int i = 0; i < len; i++)
         {
-            dinos[i].GetComponent<SpriteRenderer>().sprite = null;
-            dinosaurs[xs[i], ys[i]] = null;
-        }
+			dinosaurs[dinos[i].x, dinos[i].y].GetComponent<SpriteRenderer>().sprite = null;
+			dinosaurs[dinos[i].x, dinos[i].y].GetComponent<SpriteRenderer>().name = null;
+		}
         if (len==3)
         {
             // trigger sound effect and points
@@ -134,7 +146,50 @@ public class Board : MonoBehaviour
         }
     }
 
-    bool checkMatch(GameObject d, int r, int c)
+
+	void fillEmptySquares()
+	{
+
+		for (int x = 0; x < 10; x++)
+		{
+
+			for (int y = 0; y < 10; y++)
+			{
+
+				if (dinosaurs[x, y].GetComponent<SpriteRenderer>().sprite == null)
+				{
+					Debug.Log(x + ", " + y + "is null!");
+					int i = 1;
+
+					while (x + i <= 9 && dinosaurs[x + i, y].GetComponent<SpriteRenderer>().sprite == null)
+					{
+						//Debug.Log($"Now checking {x+i}, {y}");
+						i++;
+					}
+					if (x + i <= 9 && dinosaurs[x + i, y].GetComponent<SpriteRenderer>().sprite != null)
+					{
+						//Debug.Log($"Now setting dino at {x}, {y} to {x+i}, {y}");
+
+						dinosaurs[x, y].GetComponent<SpriteRenderer>().sprite = dinosaurs[x + i, y].GetComponent<SpriteRenderer>().sprite;
+						dinosaurs[x, y].GetComponent<SpriteRenderer>().name = dinosaurs[x + i, y].GetComponent<SpriteRenderer>().name;
+
+						dinosaurs[x + i, y].GetComponent<SpriteRenderer>().sprite = null;
+						dinosaurs[x + i, y].GetComponent<SpriteRenderer>().name = null;
+
+					}
+
+				}
+				if (dinosaurs[x, y].GetComponent<SpriteRenderer>().sprite == null)
+				{
+					dinosaurs[x, y] = Instantiate(types[(int)Random.Range(0f, 8f)]) as GameObject;
+					dinosaurs[x, y].transform.position = new Vector3((float)(y - 5.5), (float)(x - 4.5), -2f);
+				}
+			}
+		}
+
+	}
+
+	bool checkMatch(GameObject d, int r, int c)
     {
         GameObject type = d;
         List<GameObject> matchingTiles = new List<GameObject>();
@@ -143,7 +198,7 @@ public class Board : MonoBehaviour
 
         // check horizontal
         for(int i = c; i>=0; i--)
-        {
+		{
             if(dinosaurs[r,i]!=null && type!=null)
             {
                 if (dinosaurs[r, i].name == type.name && !matchingTiles.Contains(dinosaurs[r,i]))
@@ -172,20 +227,39 @@ public class Board : MonoBehaviour
                 }
             }
         }
-        if (matchingTiles.Count > 2)
+		var gametiles = new List<Tile>();
+		if (matchingTiles.Count > 2)
         {
-            explode(matchingTiles, xVals, yVals);            
-            return true;           
-        } else
-        {
-            matchingTiles.Clear();
-            xVals.Clear();
-            yVals.Clear();
-        }
 
-        //check vertical
-        for (int i = r; i >= 0; i--)
-        {
+			for(int i = 0; i < matchingTiles.Count; i++)
+			{
+				var item = new Tile
+				{
+					x = xVals[i],
+					y = yVals[i],
+					go = matchingTiles[i],
+					sprite = matchingTiles[i].GetComponent<SpriteRenderer>().sprite
+
+				};
+
+				gametiles.Add(item);
+			}
+
+			explode(gametiles);
+			fillEmptySquares();
+
+			return true;           
+        } else
+			{
+				matchingTiles.Clear();
+				xVals.Clear();
+				yVals.Clear();
+				gametiles.Clear();
+			}
+
+		//check vertical
+		for (int i = r; i >= 0; i--)
+		{
             if (dinosaurs[i, c] != null && type != null)
             {
                 if (dinosaurs[i, c].name == type.name && !matchingTiles.Contains(dinosaurs[i, c]))
@@ -218,8 +292,25 @@ public class Board : MonoBehaviour
         }
         if (matchingTiles.Count > 2)
         {
-            explode(matchingTiles, xVals, yVals);
-            return true;
+
+			for (int i = 0; i < matchingTiles.Count; i++)
+			{
+				var item = new Tile
+				{
+					x = xVals[i],
+					y = yVals[i],
+					go = matchingTiles[i],
+					sprite = matchingTiles[i].GetComponent<SpriteRenderer>().sprite
+
+
+				};
+
+				gametiles.Add(item);
+			}
+
+			explode(gametiles);
+			fillEmptySquares();
+			return true;
         }
         return false;
     }
@@ -295,7 +386,7 @@ public class Board : MonoBehaviour
         {
             // select new square
             setColor(squares[row, col], Color.black);
-            currentDino = dinosaurs[row, col];
+            CurrentDino = dinosaurs[row, col];
 
             if (row > 0)
             {
@@ -317,12 +408,13 @@ public class Board : MonoBehaviour
         }
         else
         {
-            swapDinosaurs(currentDino, dinosaurs[row, col]);
+            swapDinosaurs(CurrentDino, dinosaurs[row, col]);
 
             attemptSwap = false;
         }
 
     }
+
     
     void highlightSquare(int row, int col) {
         if (row >= 10 || col >= 10 || row < 0 || col < 0) {

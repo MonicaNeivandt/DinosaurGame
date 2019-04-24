@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -63,7 +64,6 @@ public class Board : MonoBehaviour
 		types[6] = GameObject.Find("pink_dinosaur");
 		types[7] = GameObject.Find("egg_dinosaur");
 
-		
 		resetBoard();
 		highlightSquare(0, 0);
 		initGameTimer();
@@ -76,7 +76,6 @@ public class Board : MonoBehaviour
 	// Update is called once per frame
 	void Update()
 	{
-
 		// deltaTime returns a float
 		if (gameOverTimer < 1)
 		{
@@ -132,7 +131,10 @@ public class Board : MonoBehaviour
 	{
 		GameObject mainSquare = GameObject.Find("AbstractSquare");
 
-		for (int r = 0; r < 10; r++)
+        GameObject[] previousLeft = new GameObject[10];
+        GameObject previousBelow = null;
+
+        for (int r = 0; r < 10; r++)
 		{
 			for (int c = 0; c < 10; c++)
 			{
@@ -140,10 +142,39 @@ public class Board : MonoBehaviour
 				squares[r, c] = Instantiate(mainSquare) as GameObject;
 				squares[r, c].transform.position = new Vector3((float)(c - 5.5), (float)(r - 4.5), 1f);
 
-				dinosaurs[r, c] = Instantiate(types[(int)Random.Range(0f, 8f)]) as GameObject;
+                List<GameObject> possibleCharacters = new List<GameObject>();
+                possibleCharacters.AddRange(types);
+                GameObject left = new GameObject();
+                GameObject below = new GameObject();
+
+                foreach(GameObject g in possibleCharacters)
+                {
+                    String temp = g.name + "(Clone)";
+                    if (previousLeft[c] != null)
+                    {
+                        if (temp == previousLeft[c].name)
+                        {
+                            left = g;
+                        }
+                    }
+                    if(previousBelow != null)
+                    {
+                        if (temp == previousBelow.name)
+                        {
+                            below = g;
+                        }
+                    }
+                }
+                possibleCharacters.Remove(left);
+                possibleCharacters.Remove(below);
+
+                dinosaurs[r, c] = Instantiate(possibleCharacters[(int)UnityEngine.Random.Range(0f, (float)(possibleCharacters.Count))]) as GameObject;
 				dinosaurs[r, c].transform.position = new Vector3((float)(c - 5.5), (float)(r - 4.5), -2f);
-			}
-		}
+
+                previousLeft[c] = dinosaurs[r,c];
+                previousBelow = dinosaurs[r, c];
+            }
+        }
 	}
 
 	void explode(List<Tile> dinos)
@@ -212,11 +243,12 @@ public class Board : MonoBehaviour
 				}
 				if (dinosaurs[x, y].GetComponent<SpriteRenderer>().sprite == null)
 				{
-					dinosaurs[x, y] = Instantiate(types[(int)Random.Range(0f, 8f)]) as GameObject;
+					dinosaurs[x, y] = Instantiate(types[(int)UnityEngine.Random.Range(0f, 8f)]) as GameObject;
 					dinosaurs[x, y].transform.position = new Vector3((float)(y - 5.5), (float)(x - 4.5), -2f);
 				}
 			}
 		}
+        checkAllMatches();
 
 	}
 

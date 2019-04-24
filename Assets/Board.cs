@@ -39,6 +39,7 @@ public class Board : MonoBehaviour
 	AudioSource match4;
 	AudioSource match5;
 	AudioSource boom;
+	AudioSource badmatch;
 
 	// Start is called before the first frame update
 	void Start()
@@ -54,6 +55,7 @@ public class Board : MonoBehaviour
 		match4 = GameObject.Find("Match4").GetComponent<AudioSource>();
 		match5 = GameObject.Find("Match5").GetComponent<AudioSource>();
 		boom = GameObject.Find("Boom").GetComponent<AudioSource>();
+		badmatch = GameObject.Find("BadMatch").GetComponent<AudioSource>();
 
 		types[0] = GameObject.Find("purple_dinosaur");
 		types[1] = GameObject.Find("green_dinosaur");
@@ -77,9 +79,8 @@ public class Board : MonoBehaviour
 	void Update()
 	{
 		// deltaTime returns a float
-		if (gameOverTimer < 1)
+		if (gameOverTimer < 0)
 		{
-			boom.Play();
 			gameOver();
 			return;
 		}
@@ -118,7 +119,7 @@ public class Board : MonoBehaviour
 
 		// Set the game over overlay off
 		gameOverPanel.SetActive(false);
-		gameOverTimer = 30.0f;
+		gameOverTimer = 60.0f;
 	}
 
 	void initScoreBoard()
@@ -131,50 +132,50 @@ public class Board : MonoBehaviour
 	{
 		GameObject mainSquare = GameObject.Find("AbstractSquare");
 
-        GameObject[] previousLeft = new GameObject[10];
-        GameObject previousBelow = null;
 
-        for (int r = 0; r < 10; r++)
+		GameObject[] previousLeft = new GameObject[10];
+		GameObject previousBelow = null;
+
+		for (int r = 0; r < 10; r++)
+
 		{
 			for (int c = 0; c < 10; c++)
 			{
-				
 				squares[r, c] = Instantiate(mainSquare) as GameObject;
 				squares[r, c].transform.position = new Vector3((float)(c - 5.5), (float)(r - 4.5), 1f);
 
-                List<GameObject> possibleCharacters = new List<GameObject>();
-                possibleCharacters.AddRange(types);
-                GameObject left = new GameObject();
-                GameObject below = new GameObject();
+				List<GameObject> possibleCharacters = new List<GameObject>();
+				possibleCharacters.AddRange(types);
+				GameObject left = new GameObject();
+				GameObject below = new GameObject();
 
-                foreach(GameObject g in possibleCharacters)
-                {
-                    String temp = g.name + "(Clone)";
-                    if (previousLeft[c] != null)
-                    {
-                        if (temp == previousLeft[c].name)
-                        {
-                            left = g;
-                        }
-                    }
-                    if(previousBelow != null)
-                    {
-                        if (temp == previousBelow.name)
-                        {
-                            below = g;
-                        }
-                    }
-                }
-                possibleCharacters.Remove(left);
-                possibleCharacters.Remove(below);
+				foreach (GameObject g in possibleCharacters)
+				{
+					string temp = g.name + "(Clone)";
+					if (previousLeft[c] != null)
+					{
+						if (temp == previousLeft[c].name)
+						{
+							left = g;
+						}
+					}
+					if (previousBelow != null)
+					{
+						if (temp == previousBelow.name)
+						{
+							below = g;
+						}
+					}
+				}
+				possibleCharacters.Remove(left);
+				possibleCharacters.Remove(below);
 
-                dinosaurs[r, c] = Instantiate(possibleCharacters[(int)UnityEngine.Random.Range(0f, (float)(possibleCharacters.Count))]) as GameObject;
+				dinosaurs[r, c] = Instantiate(possibleCharacters[(int)UnityEngine.Random.Range(0f, (float)(possibleCharacters.Count))]) as GameObject;
 				dinosaurs[r, c].transform.position = new Vector3((float)(c - 5.5), (float)(r - 4.5), -2f);
-
-                previousLeft[c] = dinosaurs[r,c];
-                previousBelow = dinosaurs[r, c];
-            }
-        }
+				previousLeft[c] = dinosaurs[r, c];
+				previousBelow = dinosaurs[r, c];
+			}
+		}
 	}
 
 	void explode(List<Tile> dinos)
@@ -248,8 +249,8 @@ public class Board : MonoBehaviour
 				}
 			}
 		}
-        checkAllMatches();
 
+		checkAllMatches();
 	}
 
 	bool checkMatch(GameObject d, int r, int c)
@@ -326,9 +327,9 @@ public class Board : MonoBehaviour
 		//check vertical
 		for (int i = r; i >= 0; i--)
 		{
-			if (dinosaurs[i, c] != null && type != null)
+			if (dinosaurs[i, c] != null && type != null && !matchingTiles.Contains(dinosaurs[i, c]))
 			{
-				if (dinosaurs[i, c].name == type.name && !matchingTiles.Contains(dinosaurs[i, c]))
+				if (dinosaurs[i, c].name == type.name)
 				{
 					matchingTiles.Add(dinosaurs[i, c]);
 					xVals.Add(i);
@@ -342,9 +343,9 @@ public class Board : MonoBehaviour
 		}
 		for (int i = r; i < 10; i++)
 		{
-			if (dinosaurs[i, c] != null && type != null)
+			if (dinosaurs[i, c] != null && type != null && !matchingTiles.Contains(dinosaurs[i, c]))
 			{
-				if (dinosaurs[i, c].name == type.name && !matchingTiles.Contains(dinosaurs[i, c]))
+				if (dinosaurs[i, c].name == type.name)
 				{
 					matchingTiles.Add(dinosaurs[i, c]);
 					xVals.Add(i);
@@ -367,8 +368,6 @@ public class Board : MonoBehaviour
 					y = yVals[i],
 					go = matchingTiles[i],
 					sprite = matchingTiles[i].GetComponent<SpriteRenderer>().sprite
-
-
 				};
 
 				gametiles.Add(item);
@@ -392,6 +391,7 @@ public class Board : MonoBehaviour
 			{
 				if (checkMatch(dinosaurs[i, j], i, j))
 				{
+					checkAllMatches();
 					ret = true;
 				}
 			}
@@ -411,6 +411,7 @@ public class Board : MonoBehaviour
 		if (!checkAllMatches())
 		{
 			// swap back
+			badmatch.Play();
 			temp = first.GetComponent<SpriteRenderer>().sprite;
 			name = first.GetComponent<SpriteRenderer>().name;
 			first.GetComponent<SpriteRenderer>().sprite = second.GetComponent<SpriteRenderer>().sprite;
@@ -427,15 +428,18 @@ public class Board : MonoBehaviour
 		gameOverPanel.SetActive(true);
 		timerText.text = "0.00";
 
-
 		if (Input.GetKeyDown(KeyCode.X))
 		{
-			
+
 			// Restart board
 			initGameTimer();
 			music.Play();
+			score = 0;
+			scoreText.text = "0";
 		}
 	}
+
+
 
 	void updateScore()
 	{
